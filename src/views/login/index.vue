@@ -21,13 +21,13 @@
     </van-cell-group>
   </form>
   <div class="btn-login">
-    <van-button type="info">登录</van-button>
+    <van-button type="info" @click.prevent='handleLogin'>登录</van-button>
   </div>
 </div>
 </template>
 
 <script>
-
+import { login } from '@/api/user'
 export default {
   name: 'loginIndex',
   data () {
@@ -35,6 +35,17 @@ export default {
       user: {
         mobile: '',
         code: ''
+      }
+    }
+  },
+  methods: {
+    async handleLogin () {
+      try {
+        const res = await login(this.user)
+        console.log(res)
+      } catch (err) {
+        console.log(err)
+        console.log('登录失败')
       }
     }
   }

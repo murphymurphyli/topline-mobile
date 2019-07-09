@@ -1,6 +1,6 @@
 import axios from 'axios'
 const request = axios.create({
-  baseURL: 'http://http://toutiao.course.itcast.cn'
+  baseURL: 'http://toutiao.course.itcast.cn'
 })
 
 // Add a request interceptor
@@ -20,3 +20,5 @@ request.interceptors.response.use(function (response) {
   // Do something with response error
   return Promise.reject(error)
 })
+
+export default request
