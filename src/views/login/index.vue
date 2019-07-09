@@ -8,7 +8,8 @@
         required
         clearable
         label="用户名"
-        placeholder="请输入用户名"
+        placeholder="请输入手机号"
+        :error-message="errors.mobile"
     />
     <van-field
         v-model="user.code"
@@ -17,6 +18,7 @@
         placeholder="请输入验证码"
         required
         clearable
+        :error-message="errors.code"
     />
     </van-cell-group>
   </form>
@@ -36,13 +38,27 @@ export default {
         mobile: '',
         code: ''
       },
+      errors: {
+        mobile: '',
+        code: ''
+      },
       loginLoading: false
     }
   },
   methods: {
     async handleLogin () {
-      this.loginLoading = true
       try {
+        const { mobile, code } = this.user
+        if (!mobile.length) {
+          this.errors.mobile = '手机号不能为空'
+          return
+        }
+        if (!code.length) {
+          this.errors.code = '验证码不能为空'
+          return
+        }
+        this.loginLoading = true
+
         const data = await login(this.user)
         this.$store.commit('setUser', data)
         this.$router.push({
