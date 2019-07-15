@@ -6,8 +6,8 @@
     <!-- 频道标签 -->
     <van-tabs v-model="activeChannelIndex" class="channel-tabs" sticky :offset-top="46">
       <van-tab v-for="channelItem in channels" :key="channelItem.id" :title="channelItem.name">
-        <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-          <van-list v-model="channelItem.upPullLoading" :finished="finished" finished-text="没有更多了" @load="onLoad">
+        <van-pull-refresh :success-text="channelItem.downPullLoading" :success-duration="1000" v-model="channelItem.downPullLoading" @refresh="onRefresh">
+          <van-list v-model="channelItem.upPullLoading" :finished="channelItem.upPullFinished" finished-text="没有更多了" @load="onLoad">
             <van-cell v-for="articleItem in channelItem.articles" :key="articleItem.art_id" :title="articleItem.title"/>
           </van-list>
         </van-pull-refresh>
@@ -127,11 +127,33 @@ export default {
       //   }
       // }, 500);
     },
-    onRefresh () {
-      console.log('onRefresh')
-      setTimeout(() => {
-        this.pullRefreshLoading = false
-      }, 500)
+    async onRefresh () {
+      const { activeChannel } = this
+      const timestamp = this.activeChannel.timestamp
+      this.activeChannel.timestamp = Date.now()
+      console.log(timestamp)
+      const data = await this.loadArticles()
+      // 如果有最新数据，将数据更新到频道的文章列表中
+      if (data.results.length) {
+        // 将最新的推荐内容重置到频道文章中
+        this.activeChannel.articles = data.results
+        // 因为重置了文章列表，那么当前数据化中的pre_timestamp 就是上拉加载更多的下一页数据
+        activeChannel.timestamp = data.pre_timestamp
+        activeChannel.downPullSuccessText = '更新成功'
+        // 当下拉刷新有数据并充值以后数据无法满足一屏幕，所以我们使用onload在多加载一些数据
+        this.onload()
+      } else {
+        // 如果没有最新数据，提示已经是最新数据
+        activeChannel.downPullSuccessText = '已经是最新数据'
+      }
+      activeChannel.downPullLoading = false
+
+      // 如果没有最新数据，将数据更新到频道的文章列表中。
+
+      // console.log('onRefresh')
+      // setTimeout(() => {
+      //   this.pullRefreshLoading = false
+      // }, 500)
     },
     async loadArticles () {
       const { id: channelId, timestamp } = this.activeChannel
